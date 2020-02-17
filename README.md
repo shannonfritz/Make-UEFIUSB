@@ -26,6 +26,35 @@ The script will create a bootable USB drive for UEFI (not BIOS) devices to enabl
 * *Optionally* create another USB drive (loops)
 * Clean up temporary files and dismount the ISO
 
+## Usage
+If you want to inject drivers, download and extraact them first.  See *Drivers* below for an example for Surface devices.
+
+1. Make sure the .ps1 and the .iso are in the same folder (or edit the script to specify the path to the iso)
+2. Connect the USB drive you want to overwrite
+3. launch an elevated PowerShell session in that folder and run the script.
+
+Then just wait for it to finish.
+
+```
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+                                                                                                                        Try the new cross-platform PowerShell https://aka.ms/pscore6                                                                                                                                                                                    PS C:\Windows\system32> cd C:\UEFIUSB\                                                                                  PS C:\UEFIUSB> .\Make-UEFIUSB.ps1                                                                                       Extra Folder to copy: C:\UEFIUSB\Autopilot\
+Mounting ISO...
+Creating temp workspace C:\7acfec0c-cd3b-41e7-9282-59998daf7fae
+Copying Install.WIM from the ISO
+VERBOSE: Performing the operation "Copy File" on target "Item: D:\sources\install.wim Destination:
+C:\7acfec0c-cd3b-41e7-9282-59998daf7fae\install.wim".
+Mounting Install.WIM (this takes a while)
+Mounting Injecting drivers from C:\UEFIUSB\Drivers
+VERBOSE: Target Image Version 10.0.18363.535
+VERBOSE: Successfully added driver C:\UEFIUSB\Drivers\8897BT\mbtr8897w81x64.inf
+VERBOSE: Successfully added driver C:\UEFIUSB\Drivers\8897WLAN\mrvlpcie8897.inf
+VERBOSE: Successfully added driver C:\UEFIUSB\Drivers\AudioDetectionDriver\DetectionVerificationDrv.inf
+VERBOSE: Successfully added driver C:\UEFIUSB\Drivers\AudioSST\IntcOED.inf
+VERBOSE: Successfully added driver C:\UEFIUSB\Drivers\AudioSSTBus\IntcAudioBus.inf
+...
+```
+
 
 ## Requirements
 This script is written in PowerShell and was only tested running on Windows 10.  Just be on a Supported build and it should be fine.
@@ -52,11 +81,38 @@ If you really want to you can edit the script and change $InjectImageName to wha
 ## Drivers
 The Windows Installation media usually has enough common drivers to get a device connected and let Windows Update take care of the rest, but sometimes that's not the case.  It can be helpful (even necessary) to inject drivers in the installation media so all the components like Wifi, Cameras and Keyboards are ready to go after a fresh install.  I leave the collection of drivers as an exercise for the reader, but for Surface devices you can download an .msi package with all the components for each model released at https://aka.ms/surfacedrivers
 
-Download the driver pack for each model you want into your Working Directory and use extractdrivers.cmd to automatilly extact them to a Drivers directory.  If the Make-UEFIUSB.ps1 script find a Drivers directory it will automatically process and inject any drivers it finds for you.
+Download the driver pack for each model you want into your Working Directory and just run **extractdrivers.cmd** to automatilly extact them to a Drivers directory.  If **Make-UEFIUSB.ps1** finds a Drivers directory it will automatically process and inject all the drivers it finds in there for you.
+
+```
+Microsoft Windows [Version 10.0.18363.657]
+(c) 2019 Microsoft Corporation. All rights reserved.
+
+C:\UEFIUSB>extractdrivers.cmd
+
+"SurfaceGo_Win10_17763_1902010_WiFi_2.msi"
+"SurfaceLaptop2_Win10_18362_19.100.3934.0.msi"
+"SurfaceLaptop_Win10_18362_19.100.3933.0.msi"
+"SurfacePro4_Win10_18362_19.100.2166.0.msi"
+"SurfacePro7_Win10_18362_20.014.39957.0.msi"
+"SurfacePro_Win10_18362_19.092.25297.0.msi"
+C:\UEFIUSB\x\SurfaceUpdate\8897BT
+        1 dir(s) moved.
+C:\UEFIUSB\x\SurfaceUpdate\8897WLAN
+        1 dir(s) moved.
+C:\UEFIUSB\x\SurfaceUpdate\AudioDetectionDriver
+        1 dir(s) moved.
+C:\UEFIUSB\x\SurfaceUpdate\AudioSST
+        1 dir(s) moved.
+C:\UEFIUSB\x\SurfaceUpdate\AudioSSTBus
+        1 dir(s) moved.
+...
+```
 
 
 ## Shrink WinRE.wim?
-This check only happens if also injecting drivers.  Once upon a time there was a case where WinRE was over 500MB which is larger than the defualt recovery partition size that setup.exe creates.  This isn't exactly a problem unless you enable BitLocker, at which point the WinRE is applied to that partiton and would fail, requiring another partition to be created and a reboot to do so. This was problemati for "Device Encryption" to automatically enable BitLocker, but it could be done manually. Regardless, this is not a *current* issue, but it's something I figure I'd check for and try to fix just in case.
+This check only happens if also injecting drivers.  Once upon a time there was a case where WinRE.wim was over 500MB which is larger than the defualt recovery partition size that setup.exe creates.  This wasn't exactly a problem until BitLocker was enabled; at which point the WinRE is applied to that partiton but wouldn't fit, requiring another partition to be created and a reboot to do so. This was problematic for "Device Encryption" to automatically enable BitLocker, but it could be done manually.
+
+Regardless, this is not a *current* issue, but it's something I figure I'd check for and try to fix just in case.
 
 
 ## Thank Yous
