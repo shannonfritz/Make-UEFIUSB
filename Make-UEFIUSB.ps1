@@ -96,7 +96,7 @@ if (Test-Path -Path "$InjectDrivers") {
 
 
     # Copy the scripts into the Image as well so they get on the installed device, not just the USB drive
-    if ($CopyExtraFolder) {
+    if (Test-Path -Path "$CopyExtraFolder") {
         Write-Output "Copying Extra Folder..."
         #$Location = New-Item -Path "$InjectTempPath\MOUNT\" -Name $(Split-Path $CopyExtraFolder -Leaf) -ItemType Directory
         $Location = "$InjectTempPath\MOUNT\"
