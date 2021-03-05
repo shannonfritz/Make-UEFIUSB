@@ -161,7 +161,7 @@ DO {
         Copy-Item -Path $InjectDriverLog -Destination "$($volume.DriveLetter):\" -Verbose -Force
     }
 
-    if ($CopyExtraFolder) {
+    if (Test-Path -Path "$CopyExtraFolder") {
         Write-Output "Copying Extra Folder..."
         #$Location = New-Item -Path "$($volume.DriveLetter):\" -Name $(Split-Path $CopyExtraFolder -Leaf) -ItemType Directory
         $Location = "$($volume.DriveLetter):\"
