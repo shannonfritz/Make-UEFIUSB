@@ -8,8 +8,13 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 ##### Settings 
 
 # Set here the path of your ISO file
-$iso = "$(Split-Path -Parent $PSCommandPath)\en_windows_10_business_editions_version_1909_updated_dec_2019_x64_dvd_d16597e9.iso"
+#$iso = "$(Split-Path -Parent $PSCommandPath)\en_windows_10_business_editions_version_1909_updated_dec_2019_x64_dvd_d16597e9.iso"
 #$iso = "C:\Users\shfritz\Downloads\en_windows_10_business_editions_version_1909_updated_dec_2019_x64_dvd_d16597e9.iso"
+# Let's assume there is just one ISO in the 
+if (0 -eq (Get-ChildItem -Path "$(Split-Path -Parent $PSCommandPath)\*.iso" | Measure-Object).Count) { Write-Host "No ISO found.  Quitting."; exit }  
+if (1 -lt (Get-ChildItem -Path "$(Split-Path -Parent $PSCommandPath)\*.iso" | Measure-Object).Count) { Write-Host "More than one ISO found.  Quitting."; exit }  
+$iso = Get-ChildItem -Path "$(Split-Path -Parent $PSCommandPath)\*.iso"
+Write-Host "Using $iso"
 
 # If this will be used for Autopilot, fetch the Get-WindowsAutopilotInfo script too
 #$GetAutopilotScripts = $true
