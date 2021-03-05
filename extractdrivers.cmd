@@ -34,7 +34,7 @@ mkdir "%CD%\Drivers\%1"
 
 REM Move the extracted drivers
 echo "Moving extracted drivers for %1"
-for /D %%D in ("%CD%\x\SurfaceUpdate\*") do @echo %%D && move /Y %%D "%CD%\Drivers\%1
+for /D %%D in ("%CD%\x\SurfaceUpdate\*") do @echo %%D && move /Y %%D "%CD%\Drivers\%1"
 
 REM Delete whatever else was left
 echo. Cleaing up after %1
