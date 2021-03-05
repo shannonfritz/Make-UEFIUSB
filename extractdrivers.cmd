@@ -11,7 +11,7 @@ REM ---
 REM Make a Drivers directory in the current directory
 if NOT EXIST "%CD%\Drivers" ( mkdir "%CD%\Drivers" )
 
-REM loop through and process every .msi with a subroutine
+REM Loop through and process every .msi with a subroutine
 for %%f in (*.msi) do call :msifile %%~nf
 goto:end
 
@@ -33,14 +33,15 @@ REM Make a subdirectory for this driver
 mkdir "%CD%\Drivers\%1"
 
 REM Move the extracted drivers
-echo "Moving extracted drivers for %1"
+echo Moving extracted drivers for %1
 for /D %%D in ("%CD%\x\SurfaceUpdate\*") do @echo %%D && move /Y %%D "%CD%\Drivers\%1"
 
 REM Delete whatever else was left
-echo. Cleaing up after %1
+echo Cleaing up after %1
 rmdir /s /q "%CD%\x"
 goto:eof
 
 
 :end
-echo. Done.
+echo.
+echo Done.
