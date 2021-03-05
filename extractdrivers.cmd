@@ -38,7 +38,7 @@ for /D %%D in ("%CD%\x\SurfaceUpdate\*") do @echo %%D && move /Y %%D "%CD%\Drive
 
 REM Delete whatever else was left
 echo. Cleaing up after %1
-rmdir /s /q "%CD%\x""
+rmdir /s /q "%CD%\x"
 goto:eof
 
 
