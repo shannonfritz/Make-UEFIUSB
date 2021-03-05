@@ -38,7 +38,10 @@ Then just wait for it to finish.
 ```
 Windows PowerShell
 Copyright (C) Microsoft Corporation. All rights reserved.
-                                                                                                                        Try the new cross-platform PowerShell https://aka.ms/pscore6                                                                                                                                                                                    PS C:\Windows\system32> cd C:\UEFIUSB\                                                                                  PS C:\UEFIUSB> .\Make-UEFIUSB.ps1                                                                                       Extra Folder to copy: C:\UEFIUSB\Autopilot\
+
+PS C:\Windows\system32> cd C:\UEFIUSB\                                                                                  
+PS C:\UEFIUSB> .\Make-UEFIUSB.ps1
+Extra Folder to copy: C:\UEFIUSB\Autopilot\
 Mounting ISO...
 Creating temp workspace C:\7acfec0c-cd3b-41e7-9282-59998daf7fae
 Copying Install.WIM from the ISO
@@ -79,33 +82,45 @@ If you really want to you can edit the script and change $InjectImageName to wha
 
 
 ## Drivers
-The Windows Installation media usually has enough common drivers to get a device connected and let Windows Update take care of the rest, but sometimes that's not the case.  It can be helpful (even necessary) to inject drivers in the installation media so all the components like Wifi, Cameras and Keyboards are ready to go after a fresh install.  I leave the collection of drivers as an exercise for the reader, but for Surface devices you can download an .msi package with all the components for each model released at https://aka.ms/surfacedrivers
+The Windows Installation media usually has enough of the common drivers to get a device connected to the Internet and then let Windows Update take care of the rest, but sometimes that's not the case.  It can be helpful (even necessary) to inject drivers in the installation media so all the components like Wifi, Cameras and Keyboards are ready to go after a fresh install and durring OOBE.  I leave the collection of drivers as an exercise for the reader, but for Surface devices you can download an .msi package with all the components for each model released at https://aka.ms/surfacedrivers
 
-Download the driver pack for each model you want into your Working Directory and just run **extractdrivers.cmd** to automatilly extact them to a Drivers directory.  If **Make-UEFIUSB.ps1** finds a Drivers directory it will automatically process and inject all the drivers it finds in there for you.
+If you download the driver pack for each Surface model you want, you can place them in your Working Directory and just run **extractdrivers.cmd** to automatically extact each of them under a Drivers directory.  If **Make-UEFIUSB.ps1** finds a Drivers directory it will automatically process and inject all the drivers it finds in there for you.
+
+**NOTE:** If you are not using a Surface device then you won't need to use **extractdrivers.cmd** but you can still place the extracted drivers for those other models under *\Drivers\modelname* to have them incorporated in the installation media for you by **Make-UEFIUSB.ps1**.
 
 ```
-Microsoft Windows [Version 10.0.18363.657]
-(c) 2019 Microsoft Corporation. All rights reserved.
+Microsoft Windows [Version 10.0.19042.804]
+(c) 2020 Microsoft Corporation. All rights reserved.
 
-C:\UEFIUSB>extractdrivers.cmd
-
-"SurfaceGo_Win10_17763_1902010_WiFi_2.msi"
-"SurfaceLaptop2_Win10_18362_19.100.3934.0.msi"
-"SurfaceLaptop_Win10_18362_19.100.3933.0.msi"
-"SurfacePro4_Win10_18362_19.100.2166.0.msi"
-"SurfacePro7_Win10_18362_20.014.39957.0.msi"
-"SurfacePro_Win10_18362_19.092.25297.0.msi"
-C:\UEFIUSB\x\SurfaceUpdate\8897BT
+C:\UEFIUSB>extractsurfacedrivers.cmd
+Processing SurfaceGo_Win10_18362_21.015.38060_WiFi_0
+Deleting existing drivers for SurfaceGo_Win10_18362_21.015.38060_WiFi_0
+Extracting SurfaceGo_Win10_18362_21.015.38060_WiFi_0
+Moving extracted drivers for SurfaceGo_Win10_18362_21.015.38060_WiFi_0
+C:\UEFIUSB\x\SurfaceUpdate\Drivers
         1 dir(s) moved.
-C:\UEFIUSB\x\SurfaceUpdate\8897WLAN
+C:\UEFIUSB\x\SurfaceUpdate\Firmware
         1 dir(s) moved.
+Cleaing up after SurfaceGo_Win10_18362_21.015.38060_WiFi_0
+Processing SurfaceLaptop3_Win10_18362_20.121.13124.0
+Deleting existing drivers for SurfaceLaptop3_Win10_18362_20.121.13124.0
+Extracting SurfaceLaptop3_Win10_18362_20.121.13124.0
+Moving extracted drivers for SurfaceLaptop3_Win10_18362_20.121.13124.0
 C:\UEFIUSB\x\SurfaceUpdate\AudioDetectionDriver
         1 dir(s) moved.
-C:\UEFIUSB\x\SurfaceUpdate\AudioSST
+C:\UEFIUSB\x\SurfaceUpdate\audiosst
         1 dir(s) moved.
-C:\UEFIUSB\x\SurfaceUpdate\AudioSSTBus
+C:\UEFIUSB\x\SurfaceUpdate\audiosstbus
+        1 dir(s) moved.
+C:\UEFIUSB\x\SurfaceUpdate\bluetooth
         1 dir(s) moved.
 ...
+        1 dir(s) moved.
+Cleaing up after SurfaceLaptop3_Win10_18362_20.121.13124.0
+
+Done.
+
+C:\UEFIUSB>
 ```
 
 
