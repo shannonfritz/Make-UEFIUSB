@@ -8,8 +8,7 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 ##### Settings 
 
 # Set here the path of your ISO file
-#$iso = "$(Split-Path -Parent $PSCommandPath)\en_windows_10_business_editions_version_1909_updated_dec_2019_x64_dvd_d16597e9.iso"
-#$iso = "C:\Users\shfritz\Downloads\en_windows_10_business_editions_version_1909_updated_dec_2019_x64_dvd_d16597e9.iso"
+#$iso = "$(Split-Path -Parent $PSCommandPath)\en-us_windows_11_business_editions_x64_dvd_3a304c08.iso"
 # Let's assume there is just one ISO in the 
 if (0 -eq (Get-ChildItem -Path "$(Split-Path -Parent $PSCommandPath)\*.iso" | Measure-Object).Count) { Write-Host "No ISO found.  Quitting."; exit }  
 if (1 -lt (Get-ChildItem -Path "$(Split-Path -Parent $PSCommandPath)\*.iso" | Measure-Object).Count) { Write-Host "More than one ISO found.  Quitting."; exit }  
@@ -22,8 +21,8 @@ Write-Host "Using $iso"
 # Specify a path to a folder that should get copied to copy to the USB drive
 # If injecting drivers, it'll get put in the install.wim file too.
 # Also, this script (that creates the USB drive) will be copied.
-#$CopyExtraFolder = $false
-$CopyExtraFolder = "$(Split-Path -Parent $PSCommandPath)\Autopilot\"
+$CopyExtraFolder = $false
+#$CopyExtraFolder = "$(Split-Path -Parent $PSCommandPath)\Autopilot\"
 #$CopyExtraFolder = "C:\Users\shfritz\OneDrive\Documents\Get Modern Workshop\PrepDevice\Autopilot"
 Write-Output "Extra Folder to copy: $CopyExtraFolder"
 
@@ -45,7 +44,8 @@ $InjectTempPath = "C:\$(New-GUID)"
 # image, so specify the Name of the image that should get the drivers, and all others will be removed.
 # It is recomended to use "Windows 10 Pro" as that is what ships from OEMs, and AAD Cloud Activation will SKU up to Enterprise anyway
 # NOTE: If drivers are NOT injected, all images will be  left as-is, regardless of what's named here
-$InjectImageName = "Windows 10 Pro"
+#$InjectImageName = "Windows 10 Pro"
+$InjectImageName = "Windows 11 Pro"
 
 
 ##### Begin...
