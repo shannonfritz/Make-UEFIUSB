@@ -1,7 +1,7 @@
 #### Create a Bootable USB drive to install Windows on devices with UEFI
 
 # Make-UEFIUSB.ps1
-Creating a Bootable USB drive can be easy with tools like Rufus, but when making boot media to install Windows, sometimes you need to do more than just copy an ISO to a USB drive.  So I wrote a Powershell script to take care of all the things I needed to be done.
+Creating a Bootable USB drive can be easy with tools like [Rufus](https://rufus.ie/), but when making boot media to install Windows, sometimes you need to do more than just copy an ISO to a USB drive.  So I wrote a PowerShell script to take care of all the things I needed to be done.
 
 The basic usage looks like this:
 1. Create a "Working Directory" and download Make-UEFIUSB.ps1 there. I'll use "C:\UEFIUSB" for example
@@ -13,12 +13,13 @@ After that you end up with a USB drive ready to boot and install Windows from sc
 
 
 ## What it does
-The script will create a bootable USB drive for UEFI (not BIOS) devices to enable installation of Windows 10.  It does this using PowerShell commands to perform several tasks.
+The script will create a bootable USB drive for UEFI (not BIOS) devices to enable installation of Windows 10/11/Server.  It does this using PowerShell commands to perform several tasks.
 
 * Automatically mount the .iso
 * Automatically inject Drivers (NOTE: Only for the Pro edition)
+  * Prompts you to select the Image to use (I recommend Pro)
   * Attempt to shrink WinRE.wim if it's more than 400MB
-  * Copy "Extras" into the install.wim (you may not want this, depending on what is in there)
+  * Copy "Extras" into the install.wim (edit the script to enable this)
 * Clear the USB drive of all partitions/files/data
 * Partition the USB drive with GPT and FAT32
 * Copy all contents of the ISO to the USB drive
