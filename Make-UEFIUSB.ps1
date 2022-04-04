@@ -1,4 +1,4 @@
-﻿#####
+#####
 ##### Make-UEFIUSB.ps1
 ##### 
 
@@ -24,7 +24,9 @@ Write-Host "Using $iso"
 $CopyExtraFolder = $false
 #$CopyExtraFolder = "$(Split-Path -Parent $PSCommandPath)\Autopilot\"
 #$CopyExtraFolder = "C:\Users\shfritz\OneDrive\Documents\Get Modern Workshop\PrepDevice\Autopilot"
-Write-Output "Extra Folder to copy: $CopyExtraFolder"
+if (Test-Path -Path "$CopyExtraFolder") {
+    Write-Output "Extra Folder to copy: $CopyExtraFolder"
+}
 
 # Surface drivers can be found here - download the ZIP and extract it somewhere
 # https://support.microsoft.com/en-us/help/4023482/surface-download-drivers-and-firmware-for-surface
@@ -40,16 +42,8 @@ $InjectDrivers = "$(Split-Path -Parent $PSCommandPath)\Drivers"
 # Several GB will be needed at this location to manipulate the install.wim file
 $InjectTempPath = "C:\$(New-GUID)"
 
-# Injecting drivers takes a long time, so we're only doing one image.  The ISO likely has more than one
-# image, so specify the Name of the image that should get the drivers, and all others will be removed.
-# It is recomended to use "Windows 10 Pro" as that is what ships from OEMs, and AAD Cloud Activation will SKU up to Enterprise anyway
-# NOTE: If drivers are NOT injected, all images will be  left as-is, regardless of what's named here
-#$InjectImageName = "Windows 10 Pro"
-$InjectImageName = "Windows 11 Pro"
-
 
 ##### Begin...
-
 Write-Output "Mounting ISO..."
 # Mount iso
 $miso = Mount-DiskImage -ImagePath $iso -StorageType ISO -PassThru
@@ -59,10 +53,24 @@ $dl = ($miso | Get-Volume).DriveLetter
 $InstallWIM = "$($dl):\sources\install.wim"
 
 
-# If we're injecting drivers, we'll need to manipulate the install.wim file
-# Copy the WIM file someplace, mount it, inject the drivers, then save it
+# If no drivers are beign injected, the whole section below is just skipped and
+# the WIM is just written to the USB drive as-is.
+# But, if we're injecting drivers, we'll need to manipulate the install.wim file
+# so let's copy the WIM file someplace, mount it, inject the drivers, then save it
 # https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/add-and-remove-drivers-to-an-offline-windows-image#add-drivers-to-an-offline-windows-image
 if (Test-Path -Path "$InjectDrivers") {
+    # Injecting drivers takes a long time, so we're only doing one image.  The ISO likely has more than one
+    # image, so we want to specify which one should get the drivers, and all others will be removed.
+    # It is recomended to use the "Pro" edition as that is what ships from OEMs,
+    # and AAD Cloud Activation will SKU up from Pro to Enterprise anyway
+    Write-Output "Finding images in $InstallWIM"
+    Get-WindowsImage -ImagePath $InstallWIM | select ImageIndex,ImageName | Format-Table
+    $InjectImageIndex = $null
+    while ($InjectImageIndex -notmatch "^\d+$") {
+        $InjectImageIndex = (Read-Host -Prompt "Enter the Image Index number for desired Windows Image")
+    }
+    Write-Output "Selected $InjectImageIndex"
+
     Write-Output "Creating temp workspace $InjectTempPath"
     New-Item -Path $InjectTempPath -Type directory | Out-Null
     New-Item -Path "$InjectTempPath\MOUNT" -Type directory | Out-Null
@@ -77,7 +85,7 @@ if (Test-Path -Path "$InjectDrivers") {
 
     # Mount the image
     Write-Output "Mounting Install.WIM (this takes a while)"
-    Mount-WindowsImage -Path "$InjectTempPath\MOUNT" -ImagePath "$InstallWIM" -Name $InjectImageName | Out-Null
+    Mount-WindowsImage -Path "$InjectTempPath\MOUNT" -ImagePath "$InstallWIM" -Index $InjectImageIndex | Out-Null
 
     # Inject the drivers
     Write-Output "Mounting Injecting drivers from $($InjectDrivers)"
@@ -85,15 +93,17 @@ if (Test-Path -Path "$InjectDrivers") {
     Add-WindowsDriver -Path "$InjectTempPath\MOUNT" -Driver $InjectDrivers -Recurse -Verbose -LogPath $InjectDriverLog | Out-Null
 
     # Fix WinRE while we are in here (the default recovery partition size is only 500MB)
-    if((Get-Item "$InjectTempPath\MOUNT\Windows\System32\Recovery\winre.wim").length -gt 400MB)
+    $WIMSize = (Get-Item "$InjectTempPath\MOUNT\Windows\System32\Recovery\winre.wim").length
+    Write-Output "WinRE is $($WIMSize / 1MB)MB"
+    if($WIMSize -gt 400MB)
     {
-        # If it's bigger than 500MB there can be trouble with BitLocker.
-        Write-Output "WinRE is larger than 400MB, exporting and (hopefully) shrinking it"
+        Write-Output "If bigger than 500MB there can be trouble with BitLocker.  Attempting to shrink it."
         Export-WindowsImage -SourceImagePath "$InjectTempPath\MOUNT\Windows\System32\Recovery\winre.wim" -SourceIndex 1 -DestinationImagePath "$InjectTempPath\MOUNT\Windows\System32\Recovery\winre_new.wim"
         Remove-Item -Path "$InjectTempPath\MOUNT\Windows\System32\Recovery\winre.wim"
         Rename-Item -Path "$InjectTempPath\MOUNT\Windows\System32\Recovery\winre_new.wim" -NewName "winre.wim"
+        $WIMSize = (Get-Item "$InjectTempPath\MOUNT\Windows\System32\Recovery\winre.wim").length
+        Write-Output "WinRE is now $($WIMSize / 1MB)MB"
     }
-
 
     # Copy the scripts into the Image as well so they get on the installed device, not just the USB drive
     if (Test-Path -Path "$CopyExtraFolder") {
@@ -118,7 +128,7 @@ if (Test-Path -Path "$InjectDrivers") {
     $WindowsImages = Get-WindowsImage -ImagePath "$InstallWIM"
     foreach ($WindowsImage in $WindowsImages)
     {
-        if ($WindowsImage.ImageName -ne $InjectImageName)
+        if ($WindowsImage.ImageIndex -ne $InjectImageIndex)
         {
             "Removing Image $($WindowsImage.ImageIndex), $($WindowsImage.ImageName)"
             Remove-WindowsImage -ImagePath "$InstallWIM" -Name $WindowsImage.ImageName | Out-Null
@@ -176,9 +186,10 @@ DO {
     Copy-Item -Path "$($dl):\*" -Destination "$($volume.DriveLetter):\" -Recurse -Exclude "install.wim" -Verbose -Force
 
     # Check if file is larger than 4GB
-    if((Get-Item "$InstallWIM").length -gt 4GB)
+    $WIMSize = (Get-Item "$InstallWIM").length
+    if($WIMSize -gt 4GB)
     {
-        Write-Output "Install.WIM is larger than 4GB, splitting it into SWM files..."
+        Write-Output "Install.WIM is larger than 4GB ($($WIMSize / 1GB)), splitting it into SWM files..."
         Split-WindowsImage -ImagePath $InstallWIM -SplitImagePath "$($volume.DriveLetter):\sources\install.swm" -FileSize 4096 | Out-Null
     } else {
         Write-Output "Install.WIM is smaller than 4GB, copying it..."
