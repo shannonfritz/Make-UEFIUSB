@@ -118,7 +118,7 @@ if (Test-Path -Path "$InjectDrivers") {
 
     # Commit the changes and unmount the image
     Write-Output "Saving changes to $InstallWIM (this also takes a while)"
-    Dismount-WindowsImage -Path "$InjectTempPath\MOUNT" –Save | Out-Null
+    Dismount-WindowsImage -Path "$InjectTempPath\MOUNT" -Save | Out-Null
     #Dismount-WindowsImage -Path "$InjectTempPath\MOUNT" -Discard
 
     # Since we only update one image in the WIM, remove all of the others.
