@@ -27,7 +27,7 @@ if EXIST "%CD%\Drivers\%1" ( echo Deleting existing drivers for %1 && rmdir /s /
 REM Extrat the drivers from the msi
 REM msiexec -a SurfaceLaptop2_Win10_18362_19.100.3934.0.msi /qb targetdir="%CD%\x"
 echo Extracting %1
-msiexec -a %1.msi /qb targetdir=%CD%\x
+msiexec /a "%1.msi" /qb targetdir="%CD%\x"
 
 REM Make a subdirectory for this driver
 mkdir "%CD%\Drivers\%1"
